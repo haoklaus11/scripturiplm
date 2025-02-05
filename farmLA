@@ -1,4 +1,4 @@
-warn("hi klaus, enjoy! 07/12/24 :3")
+warn("hi klaus, enjoy! 29/01/25 :3")
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
@@ -364,6 +364,10 @@ do
 					if id == "Mini Lucky Block" then
 						network.InvokeServer("MiniLuckyBlock_Consume", uid)
 					end
+
+					if id == "Party Box" then
+						network.InvokeServer("PartyBox_Consume", uid)
+					end
 				end
 			end
 		end
@@ -509,6 +513,35 @@ do
 	end)
 end
 
+do
+	local gifts = { "Large Gift Bag", "Gift Bag" }
+
+	task.spawn(function()
+		while true do
+			task.wait()
+			local inventory = clientSave.Inventory
+
+			for _, item in inventory.Misc do
+				local id = item.id
+
+				if not id then
+					continue
+				end
+
+				if table.find(gifts, id) then
+					local amount = item._am or 1
+
+					if amount then
+						network.InvokeServer("GiftBag_Open", id, amount)
+					else -- putting in nil makes it error
+						network.InvokeServer("GiftBag_Open", id)
+					end
+				end
+			end
+		end
+	end)
+end
+
 local blunder = game.ReplicatedFirst:WaitForChild("Blunder", 5)
 
 if blunder then
@@ -533,7 +566,7 @@ if game.ReplicatedStorage.Network:FindFirstChild("Orbs: Create") then
 	end)
 end
 
-setfpscap(12)
+setfpscap(8)
 
 local initial = client.leaderstats:FindFirstChild("💎 Diamonds").Value
 
@@ -747,6 +780,17 @@ task.spawn(function()
 				network.InvokeServer("RainbowMachine_Activate", uid, math.floor(amount / rainbow_minimum))
 			end
 		end)
+	end
+end)
+
+local upgradeTypes = { "DoodleRarerColorDrops", "DoodleFIllJarFaster", "DoodleDrainJarSlower" }
+
+task.spawn(function()
+	while true do
+		task.wait(10)
+		for _, upgrade in upgradeTypes do
+			game.ReplicatedStorage.Network["EventUpgrades: Purchase"]:InvokeServer(upgrade)
+		end
 	end
 end)
 
